@@ -1,0 +1,19 @@
+# Composer dependencies
+/vendor/
+
+# Environment / local config (will be added in a later task)
+.env
+.env.local
+
+# OS artefacts
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PHP artefacts
+*.log
