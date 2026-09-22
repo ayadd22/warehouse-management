@@ -22,14 +22,8 @@ class ProductService
         $unit        = trim($unit);
         $description = $description !== null ? trim($description) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Product name cannot be empty.');
-        }
-        if ($unit === '') {
-            throw new InvalidArgumentException('Product unit cannot be empty.');
-        }
-
-        // Provide a clear domain error before the database unique-constraint fires.
+       
+        
         if ($this->productRepository->findByName($name) !== null) {
             throw new RuntimeException(
                 sprintf('A product with the name "%s" already exists.', $name)
@@ -54,19 +48,13 @@ class ProductService
         $unit        = trim($unit);
         $description = $description !== null ? trim($description) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Product name cannot be empty.');
-        }
-        if ($unit === '') {
-            throw new InvalidArgumentException('Product unit cannot be empty.');
-        }
+        
 
         $product = $this->productRepository->findById($id);
         if ($product === null) {
             throw new RuntimeException(sprintf('Product #%d not found.', $id));
         }
 
-        // Check for name collision only when the name is actually changing.
         if ($name !== $product->getName()) {
             $existing = $this->productRepository->findByName($name);
             if ($existing !== null && $existing->getId() !== $id) {

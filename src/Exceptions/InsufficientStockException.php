@@ -6,11 +6,10 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-
 class InsufficientStockException extends RuntimeException
 {
     public function __construct(
-        int $productId,
+        int   $productId,
         float $requested,
         float $available,
     ) {

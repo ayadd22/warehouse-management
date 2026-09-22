@@ -23,12 +23,7 @@ class CustomerService
         $phone   = trim($phone);
         $address = $address !== null ? trim($address) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Customer name cannot be empty.');
-        }
-        if ($phone === '') {
-            throw new InvalidArgumentException('Customer phone cannot be empty.');
-        }
+      
 
         $customer = new Customer(
             name:    $name,
@@ -48,12 +43,8 @@ class CustomerService
         $phone   = trim($phone);
         $address = $address !== null ? trim($address) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Customer name cannot be empty.');
-        }
-        if ($phone === '') {
-            throw new InvalidArgumentException('Customer phone cannot be empty.');
-        }
+        
+        
 
         $customer = $this->customerRepository->findById($id);
         if ($customer === null) {

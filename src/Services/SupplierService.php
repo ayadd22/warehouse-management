@@ -19,20 +19,26 @@ class SupplierService
   
     public function create(string $name, string $phone, ?string $address = null): Supplier
     {
-        $name    = trim($name);
-        $phone   = trim($phone);
-        $address = $address !== null ? trim($address) : null;
+        $name           = trim($name);
+        $normalizedPhone = self::normalizePhone($phone);
+        $address        = $address !== null ? trim($address) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Supplier name cannot be empty.');
-        }
-        if ($phone === '') {
-            throw new InvalidArgumentException('Supplier phone cannot be empty.');
+     
+
+      
+        if ($this->supplierRepository->findByNameAndPhone($name, $normalizedPhone) !== null) {
+            throw new RuntimeException(
+                sprintf(
+                    'A supplier with the name "%s" and phone "%s" already exists.',
+                    $name,
+                    $normalizedPhone
+                )
+            );
         }
 
         $supplier = new Supplier(
             name:    $name,
-            phone:   $phone,
+            phone:   $normalizedPhone,          // store normalized form
             address: $address !== '' ? $address : null,
         );
 
@@ -44,24 +50,32 @@ class SupplierService
     
     public function update(int $id, string $name, string $phone, ?string $address = null): Supplier
     {
-        $name    = trim($name);
-        $phone   = trim($phone);
-        $address = $address !== null ? trim($address) : null;
+        $name            = trim($name);
+        $normalizedPhone = self::normalizePhone($phone);
+        $address         = $address !== null ? trim($address) : null;
 
-        if ($name === '') {
-            throw new InvalidArgumentException('Supplier name cannot be empty.');
-        }
-        if ($phone === '') {
-            throw new InvalidArgumentException('Supplier phone cannot be empty.');
-        }
-
+       
         $supplier = $this->supplierRepository->findById($id);
         if ($supplier === null) {
             throw new RuntimeException(sprintf('Supplier #%d not found.', $id));
         }
 
+       
+        if ($name !== $supplier->getName() || $normalizedPhone !== $supplier->getPhone()) {
+            $existing = $this->supplierRepository->findByNameAndPhone($name, $normalizedPhone);
+            if ($existing !== null && $existing->getId() !== $id) {
+                throw new RuntimeException(
+                    sprintf(
+                        'A supplier with the name "%s" and phone "%s" already exists.',
+                        $name,
+                        $normalizedPhone
+                    )
+                );
+            }
+        }
+
         $supplier->setName($name);
-        $supplier->setPhone($phone);
+        $supplier->setPhone($normalizedPhone);
         $supplier->setAddress($address !== '' ? $address : null);
 
         $this->supplierRepository->update($supplier);
@@ -69,7 +83,7 @@ class SupplierService
         return $supplier;
     }
 
- 
+    
     public function delete(int $id): void
     {
         if ($this->supplierRepository->findById($id) === null) {
@@ -79,6 +93,7 @@ class SupplierService
         $this->supplierRepository->delete($id);
     }
 
+  
     public function findById(int $id): Supplier
     {
         $supplier = $this->supplierRepository->findById($id);
@@ -92,5 +107,11 @@ class SupplierService
     public function findAll(): array
     {
         return $this->supplierRepository->findAll();
+    }
+
+
+    public static function normalizePhone(string $phone): string
+    {
+        return preg_replace('/\D/', '', $phone) ?? '';
     }
 }

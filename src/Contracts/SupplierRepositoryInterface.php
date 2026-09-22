@@ -11,13 +11,18 @@ interface SupplierRepositoryInterface
     
     public function create(Supplier $supplier): void;
 
+    
     public function findById(int $id): ?Supplier;
 
-    public function findAll(): array;
-
-  
-    public function update(Supplier $supplier): void;
+    
+    public function findByNameAndPhone(string $name, string $normalizedPhone): ?Supplier;
 
    
+    public function findAll(): array;
+
+    
+    public function update(Supplier $supplier): void;
+
+    
     public function delete(int $id): void;
 }

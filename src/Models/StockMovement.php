@@ -16,13 +16,13 @@ class StockMovement implements Identifiable
     private \DateTimeImmutable $createdAt;
 
     public function __construct(
-        private int $productId,
+        private int          $productId,
         private MovementType $type,
-        private float $quantity,
-        private float $unitPrice,
-        private ?int $supplierId = null,
-        private ?int $customerId = null,
-        ?\DateTimeImmutable $createdAt = null,
+        private float        $quantity,
+        private string       $unitPrice,
+        private ?int         $supplierId = null,
+        private ?int         $customerId = null,
+        ?\DateTimeImmutable  $createdAt  = null,
     ) {
         if ($productId <= 0) {
             throw new \InvalidArgumentException('productId must be a positive integer.');
@@ -30,9 +30,7 @@ class StockMovement implements Identifiable
         if ($quantity <= 0) {
             throw new \InvalidArgumentException('quantity must be greater than zero.');
         }
-        if ($unitPrice < 0) {
-            throw new \InvalidArgumentException('unitPrice cannot be negative.');
-        }
+        self::assertValidPrice($unitPrice);
 
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
     }
@@ -73,16 +71,14 @@ class StockMovement implements Identifiable
         $this->quantity = $quantity;
     }
 
-    public function getUnitPrice(): float
+    public function getUnitPrice(): string
     {
         return $this->unitPrice;
     }
 
-    public function setUnitPrice(float $unitPrice): void
+    public function setUnitPrice(string $unitPrice): void
     {
-        if ($unitPrice < 0) {
-            throw new \InvalidArgumentException('unitPrice cannot be negative.');
-        }
+        self::assertValidPrice($unitPrice);
         $this->unitPrice = $unitPrice;
     }
 
@@ -109,5 +105,19 @@ class StockMovement implements Identifiable
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+   
+
+    private static function assertValidPrice(string $value): void
+    {
+        if (!preg_match('/^\d{1,10}(\.\d{1,2})?$/', $value)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'unitPrice must be a non-negative decimal number with up to 2 decimal places (got "%s").',
+                    $value
+                )
+            );
+        }
     }
 }

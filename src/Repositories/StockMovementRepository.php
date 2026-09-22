@@ -9,12 +9,10 @@ use App\Enums\MovementType;
 use App\Models\StockMovement;
 use PDO;
 
-
 class StockMovementRepository implements StockMovementRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 
-    
     public function create(StockMovement $movement): void
     {
         $stmt = $this->pdo->prepare(
@@ -26,9 +24,9 @@ class StockMovementRepository implements StockMovementRepositoryInterface
 
         $stmt->execute([
             ':product_id'  => $movement->getProductId(),
-            ':type'        => $movement->getType()->value,   // MovementType enum → 'supply' | 'sale'
+            ':type'        => $movement->getType()->value,    // 'supply' | 'sale'
             ':quantity'    => $movement->getQuantity(),
-            ':unit_price'  => $movement->getUnitPrice(),
+            ':unit_price'  => $movement->getUnitPrice(),      // string → DECIMAL(12,2)
             ':supplier_id' => $movement->getSupplierId(),
             ':customer_id' => $movement->getCustomerId(),
             ':created_at'  => $movement->getCreatedAt()->format('Y-m-d H:i:s'),
@@ -37,7 +35,6 @@ class StockMovementRepository implements StockMovementRepositoryInterface
         $movement->setId((int) $this->pdo->lastInsertId());
     }
 
-    
     public function findById(int $id): ?StockMovement
     {
         $stmt = $this->pdo->prepare(
@@ -53,7 +50,7 @@ class StockMovementRepository implements StockMovementRepositoryInterface
         return $row !== false ? $this->mapRow($row) : null;
     }
 
-   
+    
     public function findByProductId(int $productId): array
     {
         $stmt = $this->pdo->prepare(
@@ -71,7 +68,6 @@ class StockMovementRepository implements StockMovementRepositoryInterface
         );
     }
 
-   
     public function findByProductIdAndType(int $productId, MovementType $type): array
     {
         $stmt = $this->pdo->prepare(
@@ -111,14 +107,13 @@ class StockMovementRepository implements StockMovementRepositoryInterface
         return (float) ($row['current_stock'] ?? 0.0);
     }
 
-    
     private function mapRow(array $row): StockMovement
     {
         $movement = new StockMovement(
-            productId:  (int)   $row['product_id'],
+            productId:  (int)    $row['product_id'],
             type:       MovementType::from($row['type']),
-            quantity:   (float) $row['quantity'],
-            unitPrice:  (float) $row['unit_price'],
+            quantity:   (float)  $row['quantity'],
+            unitPrice:  (string) $row['unit_price'],  
             supplierId: $row['supplier_id'] !== null ? (int) $row['supplier_id'] : null,
             customerId: $row['customer_id'] !== null ? (int) $row['customer_id'] : null,
             createdAt:  new \DateTimeImmutable($row['created_at']),

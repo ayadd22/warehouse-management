@@ -13,7 +13,6 @@ class SupplierRepository implements SupplierRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 
-    
     public function create(Supplier $supplier): void
     {
         $stmt = $this->pdo->prepare(
@@ -45,6 +44,24 @@ class SupplierRepository implements SupplierRepositoryInterface
     }
 
     
+    public function findByNameAndPhone(string $name, string $normalizedPhone): ?Supplier
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, name, phone, address
+             FROM suppliers
+             WHERE name  = :name
+               AND phone = :phone'
+        );
+        $stmt->execute([
+            ':name'  => $name,
+            ':phone' => $normalizedPhone,
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row !== false ? $this->mapRow($row) : null;
+    }
+
     public function findAll(): array
     {
         $stmt = $this->pdo->query(
@@ -59,7 +76,6 @@ class SupplierRepository implements SupplierRepositoryInterface
         );
     }
 
-    
     public function update(Supplier $supplier): void
     {
         $stmt = $this->pdo->prepare(
@@ -78,14 +94,14 @@ class SupplierRepository implements SupplierRepositoryInterface
         ]);
     }
 
-    
     public function delete(int $id): void
     {
         $stmt = $this->pdo->prepare('DELETE FROM suppliers WHERE id = :id');
         $stmt->execute([':id' => $id]);
     }
 
-   
+ 
+
     private function mapRow(array $row): Supplier
     {
         $supplier = new Supplier(
